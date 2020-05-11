@@ -13,18 +13,24 @@ const addRecipe = (recipe, id) => {
   list.innerHTML += html;
 };
 
+// delete recipe from ui
+const deleteRecipe = (id) => {
+  const recipes = document.querySelectorAll('li');
+  recipes.forEach((recipe) => {
+    if (recipe.getAttribute('data-id') === id) {
+      recipe.remove();
+    }
+  });
+};
+
 // Get documents
-db.collection('recepies')
-  .get()
-  .then((snapshot) => {
-    // when we have the data
-    snapshot.docs.forEach((doc) => {
-      // console.log(doc);
-      // console.log(doc.id);
-      addRecipe(doc.data(), doc.id);
-    });
-  })
-  .catch((err) => console.log(err));
+db.collection('recepies').onSnapshot((spanshot) => {
+  spanshot.docChanges().forEach((change) => {
+    const doc = change.doc;
+    if (change.type === 'added') addRecipe(doc.data(), doc.id);
+    else if (change.type === 'removed') deleteRecipe(doc.id);
+  });
+});
 
 // Add documents
 form.addEventListener('submit', (e) => {
